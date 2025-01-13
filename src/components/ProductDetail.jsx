@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getProductDetail, addToCart } from "../services/index";
+import { getProductDetail } from "../services/index";
+import { handleQuantityChange, addItemToCart } from "../utils/cartUtils";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -12,21 +13,12 @@ const ProductDetail = () => {
     if (response) setProduct(response);
   };
 
-  const handleQuantityChange = async (quantity = 1, increment) => {
-    const response = await addToCart(
-      id,
-      increment ? quantity + 1 : quantity - 1
-    );
-    if (response?.success) {
-      fetchProductDetail();
-    }
+  const updateQuantity = async (quantity, increment) => {
+    await handleQuantityChange(id, quantity, increment, fetchProductDetail);
   };
 
   const handleAddToCart = async () => {
-    const response = await addToCart(id, 1);
-    if (response?.success) {
-      fetchProductDetail();
-    }
+    await addItemToCart(id, fetchProductDetail);
   };
 
   useEffect(() => {
@@ -41,7 +33,7 @@ const ProductDetail = () => {
         className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mb-4"
         onClick={() => navigate("/products")}
       >
-        Back to Products
+        &lt; Back to Products
       </button>
       <div className="border border-gray-200 rounded-lg p-8">
         <img
@@ -53,17 +45,17 @@ const ProductDetail = () => {
         <p>{product.description}</p>
         <div>${product.price}</div>
         {product.quantity > 0 ? (
-          <div className="flex items-center gap-2 mt-4">
+          <div className="flex items-center gap-2 mt-4 w-40">
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              onClick={() => handleQuantityChange(product.quantity, false)}
+              onClick={() => updateQuantity(product.quantity, false)}
             >
               -
             </button>
             <span className="py-2 px-4">{product.quantity}</span>
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              onClick={() => handleQuantityChange(product.quantity, true)}
+              onClick={() => updateQuantity(product.quantity, true)}
             >
               +
             </button>

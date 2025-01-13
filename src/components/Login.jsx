@@ -15,24 +15,32 @@ const Login = () => {
     }
   };
   return (
-    <>
-      <input
-        type="email"
-        placeholder="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+    <div className="flex flex-col items-center">
+      <div className="flex flex-col gap-2 w-[250px] p-8">
+        <input
+          type="email"
+          placeholder="email"
+          value={email}
+          className="border-2 border-black px-2"
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="password"
+          value={password}
+          className="border-2 border-black px-2"
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      <button type="submit" onClick={handleSubmit}>
-        submit
-      </button>
-    </>
+        <button
+          type="submit"
+          onClick={handleSubmit}
+          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-4 rounded"
+        >
+          submit
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCartDetail, addToCart } from "../services/index";
+import { getCartDetail } from "../services/index";
+import { handleQuantityChange } from "../utils/cartUtils";
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -10,22 +11,21 @@ const Cart = () => {
   const fetchCartProducts = async () => {
     const response = await getCartDetail();
     if (response) {
-      const activeItems = response.items.filter(
-        (item) => item.cartQuantity > 0
-      );
+      const activeItems = response.items
+        .filter((item) => item.cartQuantity > 0)
+        .sort((a, b) => a.productId - b.productId);
       setCartItems(activeItems);
       setTotal(response.total);
     }
   };
 
-  const handleQuantityChange = async (productId, quantity = 1, increment) => {
-    const response = await addToCart(
+  const updateQuantity = async (productId, quantity, increment) => {
+    await handleQuantityChange(
       productId,
-      increment ? quantity + 1 : quantity - 1
+      quantity,
+      increment,
+      fetchCartProducts
     );
-    if (response?.success) {
-      fetchCartProducts();
-    }
   };
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const Cart = () => {
         className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mb-4"
         onClick={() => navigate("/products")}
       >
-        Back to Products
+        &lt; Back to Products
       </button>
       <div>
         <div className="text-2xl font-bold mb-4">Total: ${total || 0}</div>
@@ -47,7 +47,7 @@ const Cart = () => {
         ) : (
           cartItems.map((product) => (
             <div
-              className="border border-gray-200 rounded-lg p-4 mb-4"
+              className="border border-gray-200 rounded-lg p-4 mb-4 flex justify-between items-center"
               key={product.productId}
             >
               <div className="h-40 w-40 object-cover">
@@ -59,7 +59,7 @@ const Cart = () => {
                 <button
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                   onClick={() =>
-                    handleQuantityChange(
+                    updateQuantity(
                       product.productId,
                       product.cartQuantity,
                       false
@@ -72,7 +72,7 @@ const Cart = () => {
                 <button
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                   onClick={() =>
-                    handleQuantityChange(
+                    updateQuantity(
                       product.productId,
                       product.cartQuantity,
                       true

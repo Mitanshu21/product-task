@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllProducts, addToCart, getCartDetail } from "../services/index";
+import { getAllProducts } from "../services/index";
+import {
+  fetchCartItems,
+  isProductInCart,
+  addItemToCart,
+} from "../utils/cartUtils";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -13,27 +18,18 @@ const Products = () => {
   };
 
   const fetchCart = async () => {
-    const response = await getCartDetail();
-    if (response?.items) {
-      setCartItems(response.items.filter((item) => item.cartQuantity > 0));
-    }
+    const items = await fetchCartItems();
+    setCartItems(items);
   };
 
-  const addToCard = async (id) => {
-    const response = await addToCart(id, 1);
-    if (response?.success) {
-      navigate("/cart");
-    }
+  const handleAddToCart = async (id) => {
+    const response = await addItemToCart(id, () => navigate("/cart"));
   };
 
   useEffect(() => {
     fetchAllProducts();
     fetchCart();
   }, []);
-
-  const isProductInCart = (productId) => {
-    return cartItems.some((item) => item.productId === productId);
-  };
 
   return (
     <div className="p-4">
@@ -45,19 +41,22 @@ const Products = () => {
       </button>
       <div className="grid grid-cols-3 gap-4">
         {products.map((product) => (
-          <div className="border border-gray-200 rounded-lg p-4" key={product.id}>
+          <div
+            className="border border-gray-200 rounded-lg p-4 flex flex-col gap-2 justify-between"
+            key={product.id}
+          >
             <div onClick={() => navigate(`/products/${product.id}`)}>
               <img
-                className="h-40 w-40 object-cover"
+                className="h-40 w-full object-cover"
                 src={product.imageUrl}
                 alt={product.name}
               />
               <div>{product.name}</div>
               <div>${product.price}</div>
             </div>
-            {isProductInCart(product.id) ? (
+            {isProductInCart(product.id, cartItems) ? (
               <button
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded "
                 onClick={() => navigate("/cart")}
               >
                 Go to Cart
@@ -65,7 +64,7 @@ const Products = () => {
             ) : (
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                onClick={() => addToCard(product.id)}
+                onClick={() => handleAddToCart(product.id)}
               >
                 Add to Cart
               </button>
